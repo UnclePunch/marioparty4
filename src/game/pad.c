@@ -63,7 +63,6 @@ void HuPadSampleCallback(void)
     s16 i;
 
     RumbleBit = PADRead(status);
-    PADClamp(status);
 
     for(i=0; i<4; i++) {
         PADStatus *curr_status = &status[i];
