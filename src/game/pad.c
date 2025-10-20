@@ -1,6 +1,7 @@
 #include "dolphin.h"
 #include "game/msm.h"
 #include "game/pad.h"
+#include "game/printfunc.h"
 
 
 typedef struct pad_rumble {
@@ -43,11 +44,87 @@ static u8 _PadDStkRepCnt[4];
 static u8 _PadDStkRepOld[4];
 static s8 _PadErr[4];
 static u32 RumbleBit;
+static PADStatus status[4];
 s32 VCounter;
 
 static u32 chanTbl[4] = { PAD_CHAN0_BIT, PAD_CHAN1_BIT, PAD_CHAN2_BIT, PAD_CHAN3_BIT };
 
 extern int HuDvdErrWait;
+
+#define PRESS_HISTORY 60
+
+int sample_num = 0;
+int buffer_idx = 0;
+u8 a_presses[4][PRESS_HISTORY] = {0};
+u8 last_a_state[4] = {0};
+u8 a_press_num[4] = {0};
+void HuPadSampleCallback(void)
+{
+    s16 i;
+
+    RumbleBit = PADRead(status);
+    PADClamp(status);
+
+    for(i=0; i<4; i++) {
+        PADStatus *curr_status = &status[i];
+        int is_pressed_a = (curr_status->button & PAD_BUTTON_A) ? 1 : 0;
+
+        if (last_a_state[i] == 0 && is_pressed_a)
+            a_press_num[i]++;
+
+        last_a_state[i] = is_pressed_a;
+    }
+
+    sample_num++;
+}
+void HuPadUpdatePresses(void)
+{
+    s16 i;
+    int enable = OSDisableInterrupts();
+
+    // advance once per frame
+    buffer_idx = (buffer_idx + 1) % PRESS_HISTORY;
+
+    for (i = 0; i < 4; i++) {
+        // store current frame’s press count
+        a_presses[i][buffer_idx] = a_press_num[i];
+
+        // reset frame counter for next accumulation
+        a_press_num[i] = 0;
+    }
+
+    sample_num = 0;
+
+    OSRestoreInterrupts(enable);
+}
+int HuPadGetAPressNum(int pad_idx)
+{
+    // return most recent value (no offset)
+    return a_presses[pad_idx][buffer_idx];
+}
+void HuPadReportPresses(void)
+{
+    s16 i, j;
+    int total_a_presses, enable;
+    
+    enable = OSDisableInterrupts();
+
+    for (i = 0; i < 4; i++) {
+        total_a_presses = 0;
+
+        // sum all 60 frames (regardless of where head is)
+        for (j = 0; j < PRESS_HISTORY; j++) {
+            total_a_presses += a_presses[i][j];
+        }
+
+        if (total_a_presses > 0) {
+            fontcolor = FONT_COLOR_WHITE;
+            print8(85 + ((600 / 4) * i), 20, 2.0f, "%d", total_a_presses);
+        }
+    }
+
+    OSRestoreInterrupts(enable);
+}
 
 void HuPadInit(void)
 {
@@ -55,7 +132,8 @@ void HuPadInit(void)
     BOOL int_level;
     PADSetSpec(PAD_SPEC_5);
     PADInit();
-    SISetSamplingRate(0);
+    SISetSamplingRate(1);
+    PADSetSamplingCallback(HuPadSampleCallback);
     int_level = OSDisableInterrupts();
     VISetPostRetraceCallback(PadReadVSync);
     OSRestoreInterrupts(int_level);
@@ -144,16 +222,15 @@ void HuPadRead(void)
         HuPadErr[i] = _PadErr[i];
         _PadBtnDown[i] = 0;
     }
+
+    HuPadUpdatePresses();
 }
 
 static void PadReadVSync(u32 retraceCount)
 {
     u32 chan;
     s16 i;
-    PADStatus status[4];
     if(!HuDvdErrWait) {
-        RumbleBit = PADRead(status);
-        PADClamp(status);
         chan = 0;
         for(i=0; i<4; i++) {
             PADStatus *curr_status = &status[i];
