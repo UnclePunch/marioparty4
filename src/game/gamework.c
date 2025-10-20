@@ -144,8 +144,8 @@ void GWGameStatReset(void)
     game_stat->create_time = 0;
     game_stat->mg_custom[0] = 0;
     game_stat->mg_custom[1] = 0;
-    game_stat->mg_avail[0] = 0;
-    game_stat->mg_avail[1] = 0;
+    game_stat->mg_avail[0] = -1;
+    game_stat->mg_avail[1] = -1;
     ResetMGRecord(game_stat);
     ResetBoardRecord(game_stat);
     ResetPresent(game_stat);
