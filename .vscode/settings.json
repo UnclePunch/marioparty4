@@ -70,7 +70,8 @@
     "dispatch.h": "c",
     "trk.h": "c",
     "debuggerdriver.h": "c",
-    "mpexdll.h": "c"
+    "mpexdll.h": "c",
+    "m407dll.h": "c"
   },
   "search.useIgnoreFiles": false,
   "search.exclude": {

@@ -3,6 +3,11 @@
 
 #include "game/object.h"
 
+#define GAME_TIMER (10 * 60)
+#define MAX_WHOMPS_PLAYER 300
+#define MAX_WHOMPS_ALL_PLAYERS MAX_WHOMPS_PLAYER *ARRAY_COUNT(GWPlayer)
+#define MAX_WHOMPS (MAX_WHOMPS_PLAYER + 1) * ARRAY_COUNT(GWPlayer)
+
 typedef void (*VoidFuncs)(void);
 typedef void (*ObjFuncs)(omObjData *);
 

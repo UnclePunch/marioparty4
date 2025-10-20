@@ -12,14 +12,15 @@
 
 #include "REL/m407dll.h"
 
+extern int HuPadGetAPressNum(u8);
 typedef struct unkDominationData {
-    u8 unk_00;
+    u8 pid;
     u8 unk_01;
     u8 unk_02;
     // padding unk_03
-    s32 unk_04;
+    s32 is_com;
     s32 unk_08;
-    u8 unk_0C;
+    u8 pad_idx;
     // padding unk_0D
     f32 unk_10;
     f32 unk_14;
@@ -39,7 +40,7 @@ void fn_1_628(omObjData *, s32);
 void fn_1_64C(omObjData *);
 void fn_1_99C(omObjData *);
 void fn_1_A1C(omObjData *arg0);
-void fn_1_26CC(u8);
+void fn_1_26CC(u8, u8);
 void fn_1_4544(s32, s32, f32, f32, f32);
 s16 fn_1_28B8(u8);
 s16 fn_1_28E4(u8);
@@ -53,6 +54,7 @@ void fn_1_1074(omObjData *arg0);
 void fn_1_11CC(omObjData *arg0);
 void fn_1_13E4(omObjData *arg0);
 void fn_1_1460(omObjData *arg0);
+extern u8 a_press_num[];
 
 // bss
 Process *lbl_1_bss_18;
@@ -171,7 +173,7 @@ inline void SetDominationDataStuff(omObjData *arg0, s32 val0, s32 val1)
 
 void ObjectSetup(void)
 {
-    lbl_1_bss_0[0] = omInitObjMan(0x2F8, 0x2000);
+    lbl_1_bss_0[0] = omInitObjMan((MAX_WHOMPS_PLAYER + 30) * 4, 0x2000);
     omGameSysInit(lbl_1_bss_0[0]);
     fn_1_4980(lbl_1_bss_0[0]);
 }
@@ -292,7 +294,7 @@ s32 fn_1_4C0(u8 arg0)
 s32 fn_1_508(u8 arg0)
 {
     unkDominationData *unkData = lbl_1_bss_8[arg0]->data;
-    return unkData->unk_04;
+    return unkData->is_com;
 }
 
 s32 fn_1_53C(u8 arg0)
@@ -307,13 +309,13 @@ void fn_1_568(s16 arg0, s16 arg1, s16 arg2)
     unkData = lbl_1_bss_8[arg0]->data;
     switch (arg1) {
         case 0:
-            omVibrate(unkData->unk_00, arg2, 6, 6);
+            omVibrate(unkData->pid, arg2, 6, 6);
             break;
         case 1:
-            omVibrate(unkData->unk_00, arg2, 4, 2);
+            omVibrate(unkData->pid, arg2, 4, 2);
             break;
         case 2:
-            omVibrate(unkData->unk_00, arg2, 0xC, 0);
+            omVibrate(unkData->pid, arg2, 0xC, 0);
             break;
     }
 }
@@ -338,10 +340,10 @@ void fn_1_64C(omObjData *arg0)
     arg0->data = HuMemDirectMallocNum(HEAP_SYSTEM, sizeof(unkDominationData), MEMORY_DEFAULT_NUM);
     temp_r31 = arg0->data;
     temp_r29 = arg0->work[0];
-    temp_r31->unk_00 = temp_r29;
+    temp_r31->pid = temp_r29;
     temp_r31->unk_01 = GWPlayerCfg[temp_r29].character;
-    temp_r31->unk_0C = GWPlayerCfg[temp_r29].pad_idx;
-    temp_r31->unk_04 = GWPlayerCfg[temp_r29].iscom;
+    temp_r31->pad_idx = GWPlayerCfg[temp_r29].pad_idx;
+    temp_r31->is_com = GWPlayerCfg[temp_r29].iscom;
     temp_r31->unk_02 = GWPlayerCfg[temp_r29].diff;
     temp_r31->unk_08 = 0;
     temp_r31->unk_34 = 0;
@@ -398,25 +400,25 @@ void fn_1_A88(omObjData *arg0) { }
 
 void fn_1_A8C(omObjData *arg0)
 {
-    s32 var_r29;
+    s32 is_pressed;
     unkDominationData *temp_r31;
 
-    var_r29 = 0;
+    is_pressed = 0;
     temp_r31 = arg0->data;
     temp_r31->unk_28 += 1.0f;
 
-    if (temp_r31->unk_04 == 0) {
-        var_r29 = (HuPadBtnDown[temp_r31->unk_0C] & 0x100) ? 1 : 0;
+    if (temp_r31->is_com == 0) {
+        is_pressed = HuPadGetAPressNum(temp_r31->pad_idx);
     }
     else if ((u32)temp_r31->unk_28 >= (u32)temp_r31->unk_2C) {
-        var_r29 = 1;
+        is_pressed = 1;
         temp_r31->unk_2C += temp_r31->unk_30;
     }
 
-    if (var_r29 != 0) {
+    if (is_pressed > 0) {
         CharModelMotionShiftSet(temp_r31->unk_01, arg0->motion[2], 0.0f, 0.0f, HU3D_MOTATTR_NONE);
-        fn_1_4544(4, 0x10, 600.0f - (400.0f * temp_r31->unk_00), -20.0f, -450.0f);
-        fn_1_26CC(temp_r31->unk_00);
+        fn_1_4544(4, 0x10, 600.0f - (400.0f * temp_r31->pid), -20.0f, -450.0f);
+        fn_1_26CC(temp_r31->pid, is_pressed);
         temp_r31->unk_34 = 1;
         return;
     }
@@ -534,7 +536,7 @@ void fn_1_11CC(omObjData *arg0)
         CharModelVoiceEnableSet(temp_r31->unk_01, arg0->motion[3], 0);
         CharModelMotionShiftSet(temp_r31->unk_01, arg0->motion[3], 0.0f, 10.0f, HU3D_MOTATTR_NONE);
         temp_r31->unk_14 = 1000.0f;
-        temp_r31->unk_18 = 200.0f * (fn_1_28B8(temp_r31->unk_00) + 2);
+        temp_r31->unk_18 = 200.0f * (fn_1_28B8(temp_r31->pid) + 2);
         temp_r31->unk_24 = 0.0f;
         temp_r31->unk_20 = 1;
     }
@@ -546,7 +548,7 @@ void fn_1_11CC(omObjData *arg0)
         temp_r31->unk_14 = 300.0f;
         CharModelVoiceEnableSet(temp_r31->unk_01, arg0->motion[4], 0);
         CharModelMotionShiftSet(temp_r31->unk_01, arg0->motion[4], 0.0f, 10.0f, HU3D_MOTATTR_NONE);
-        temp = fn_1_28E4(temp_r31->unk_00);
+        temp = fn_1_28E4(temp_r31->pid);
         Hu3DModelHookSet(temp, "itemhook_c", arg0->model[0]);
         temp_r31->unk_10 = 0.0f;
         temp_r31->unk_14 = 0.0f;

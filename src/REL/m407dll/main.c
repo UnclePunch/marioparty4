@@ -5,6 +5,7 @@
 #include "game/wipe.h"
 #include "game/audio.h"
 #include "game/hsfman.h"
+#include "game/pad.h"
 
 #include "REL/m407dll.h"
 
@@ -14,7 +15,7 @@ typedef struct unkDominationData5 {
 /* 0x06 */ s16 unk_06;
 /* 0x08 */ s16 unk_08;
 /* 0x0A */ char unk_0A[6];
-/* 0x10 */ s16 unk_10;
+/* 0x10 */ s16 game_timer;
 /* 0x12 */ char unk_12[10];
 /* 0x1C */ s16 unk_1C[4];
 /* 0x24 */ s16 unk_24;
@@ -43,6 +44,8 @@ s16 fn_1_5804(void);
 void fn_1_5A80(void);
 void fn_1_5BB0(void);
 
+extern void HuPadReportPresses(void);
+
 //bss
 Process* lbl_1_bss_3980;
 omObjData* lbl_1_bss_397C;
@@ -62,7 +65,7 @@ VoidFuncs lbl_1_data_2A8[] = {
     fn_1_5630,
     fn_1_5A80,
     fn_1_5BB0,
-    fn_1_4B7C
+    fn_1_4B7C,
 };
 
 f32 lbl_1_data_2DC[4] = {850.0f, 900.0f, 1300.0f, 1500.0f};
@@ -214,8 +217,8 @@ void fn_1_4E8C(void) {
     if (MGSeqStatGet(temp_r31->unk_06) == 0) {
         MGSeqKill(temp_r31->unk_06);
         temp_r31->unk_06 = -1;
-        temp_r31->unk_10 = 0x258;
-        temp_r31->unk_08 = MGSeqTimerCreate(temp_r31->unk_10 / 60);
+        temp_r31->game_timer = GAME_TIMER;
+        temp_r31->unk_08 = MGSeqTimerCreate(temp_r31->game_timer / 60);
         fn_1_1E4();
         fn_1_4C3C(3);
     }
@@ -223,11 +226,13 @@ void fn_1_4E8C(void) {
 
 void fn_1_4FAC(void) {
     unkDominationData5* temp_r31;
-    
+
+    HuPadReportPresses();
+
     temp_r31 = lbl_1_bss_397C->data;
-    if (temp_r31->unk_10 > 0) {
-        if ((--temp_r31->unk_10 % 60) == 0) {
-            MGSeqParamSet(temp_r31->unk_08, 1, (temp_r31->unk_10 / 60));
+    if (temp_r31->game_timer > 0) {
+        if ((--temp_r31->game_timer % 60) == 0) {
+            MGSeqParamSet(temp_r31->unk_08, 1, (temp_r31->game_timer / 60));
         }
         return;
     }

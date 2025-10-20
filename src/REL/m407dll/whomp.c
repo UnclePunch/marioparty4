@@ -7,10 +7,6 @@
 
 #include "REL/m407dll.h"
 
-#define MAX_WHOMPS_PLAYER 160
-#define MAX_WHOMPS_ALL_PLAYERS MAX_WHOMPS_PLAYER *ARRAY_COUNT(GWPlayer)
-#define MAX_WHOMPS (MAX_WHOMPS_PLAYER + 1) * ARRAY_COUNT(GWPlayer)
-
 typedef struct unkDominationData7 {
     /* 0x00 */ u32 unk_00;
     /* 0x04 */ s32 unk_04;
@@ -42,7 +38,7 @@ s16 lbl_1_bss_1E98[MAX_WHOMPS][3];
 s16 lbl_1_bss_68[MAX_WHOMPS][6];
 s16 lbl_1_bss_66;
 s16 lbl_1_bss_64;
-s16 lbl_1_bss_3A[21];
+s16 player_scores[21];
 s16 lbl_1_bss_38;
 
 // data
@@ -95,7 +91,7 @@ void fn_1_2354(Process *arg0)
     }
 
     for (i = 0; i < 4; i++) {
-        lbl_1_bss_3A[i] = 0;
+        player_scores[i] = 0;
     }
 
     lbl_1_bss_64 = 0;
@@ -128,31 +124,34 @@ void fn_1_25C0(void)
     lbl_1_bss_38 = 0;
 
     for (i = 0; i < 4; i++) {
-        if (lbl_1_bss_38 < lbl_1_bss_3A[i]) {
-            lbl_1_bss_38 = lbl_1_bss_3A[i];
+        if (lbl_1_bss_38 < player_scores[i]) {
+            lbl_1_bss_38 = player_scores[i];
         }
     }
 
     lbl_1_bss_66 = 0;
 
     for (i = 0; i < 4; i++) {
-        if (lbl_1_bss_3A[i] > 0) {
+        if (player_scores[i] > 0) {
             fn_1_290C(lbl_1_bss_2DB0[i], 3);
             lbl_1_bss_66 += 1;
         }
     }
 }
 
-void fn_1_26CC(u8 arg0)
+void fn_1_26CC(u8 pid, u8 presses)
 {
     u32 i;
     omObjData *temp;
 
-    i = lbl_1_bss_3A[arg0];
+    i = player_scores[pid];
     if (i < MAX_WHOMPS_PLAYER) {
-        lbl_1_bss_3A[arg0] = i + 1;
-        temp = lbl_1_bss_2DB0[arg0 + i * ARRAY_COUNT(GWPlayer)];
+        player_scores[pid] = (i + presses) > MAX_WHOMPS_PLAYER ? MAX_WHOMPS_PLAYER : i + presses;
+        temp = lbl_1_bss_2DB0[pid + i * ARRAY_COUNT(GWPlayer)];
         fn_1_290C(temp, 2);
+
+        // if (presses > 1)
+        //     HuAudFXPlay(0x830);
     }
 }
 
@@ -165,7 +164,7 @@ void fn_1_2770(u8 arg0, s16 arg2)
     temp_r31 = temp_r30->data;
     temp_r31->unk_08.x = 600.0f - (400.0f * arg0);
     temp_r31->unk_08.y = -300.0f;
-    temp_r31->unk_08.z = 200.0f * (lbl_1_bss_3A[arg0] + 2);
+    temp_r31->unk_08.z = 200.0f * (player_scores[arg0] + 2);
     fn_1_290C(temp_r30, 2);
 }
 
@@ -176,7 +175,7 @@ s32 fn_1_2880(void)
 
 s16 fn_1_28B8(u8 arg0)
 {
-    return lbl_1_bss_3A[arg0];
+    return player_scores[arg0];
 }
 
 s16 fn_1_28D4(void)
@@ -485,7 +484,7 @@ void fn_1_37B0(omObjData *arg0)
     temp_r31->unk_14.x -= 4.0f;
     temp_r31->unk_08.y += 0.9f;
     if ((temp_r31->unk_14.x <= -25.0f) && (temp_r31->unk_2C == 1)) {
-        if ((temp_r31->unk_00 < 640) && ((temp_r31->unk_00 >> 2) < (lbl_1_bss_3A[temp_r31->unk_00 & 3] - 1))) {
+        if ((temp_r31->unk_00 < MAX_WHOMPS_ALL_PLAYERS) && ((temp_r31->unk_00 >> 2) < (player_scores[temp_r31->unk_00 & 3] - 1))) {
             fn_1_290C(lbl_1_bss_2DB0[temp_r31->unk_00 + 4], 3);
             temp_r31->unk_2C++;
         }
