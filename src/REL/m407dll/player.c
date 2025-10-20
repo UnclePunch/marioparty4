@@ -54,7 +54,6 @@ void fn_1_1074(omObjData *arg0);
 void fn_1_11CC(omObjData *arg0);
 void fn_1_13E4(omObjData *arg0);
 void fn_1_1460(omObjData *arg0);
-extern u8 a_press_num[];
 
 // bss
 Process *lbl_1_bss_18;

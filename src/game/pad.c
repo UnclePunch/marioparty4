@@ -232,6 +232,7 @@ static void PadReadVSync(u32 retraceCount)
     s16 i;
     if(!HuDvdErrWait) {
         chan = 0;
+        PADClamp(status);
         for(i=0; i<4; i++) {
             PADStatus *curr_status = &status[i];
             PadRumble *rumble = &rumbleData[i];
