@@ -104,25 +104,26 @@ int HuPadGetAPressNum(int pad_idx)
 void HuPadReportPresses(void)
 {
     s16 i, j;
-    int total_a_presses, enable;
+    int total_a_presses[4], enable;
     
     enable = OSDisableInterrupts();
-
     for (i = 0; i < 4; i++) {
-        total_a_presses = 0;
+        total_a_presses[i] = 0;
 
         // sum all 60 frames (regardless of where head is)
         for (j = 0; j < PRESS_HISTORY; j++) {
-            total_a_presses += a_presses[i][j];
+            total_a_presses[i] += a_presses[i][j];
         }
+    }
+    OSRestoreInterrupts(enable);
 
-        if (total_a_presses > 0) {
+    for (i = 0; i < 4; i++) {
+        if (total_a_presses[i] > 0) {
             fontcolor = FONT_COLOR_WHITE;
-            print8(85 + ((600 / 4) * i), 20, 2.0f, "%d", total_a_presses);
+            print8(85 + ((600 / 4) * i), 20, 2.0f, "%d", total_a_presses[i]);
         }
     }
 
-    OSRestoreInterrupts(enable);
 }
 
 void HuPadInit(void)

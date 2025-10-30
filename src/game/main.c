@@ -98,6 +98,7 @@ void main(void)
         pfClsScr();
         HuPrcCall(1);
         MGSeqMain();
+        HuPadReportPresses();
         HuPerfBegin(1);
         Hu3DExec();
         HuDvdErrorWatch();

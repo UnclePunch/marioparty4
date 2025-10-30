@@ -10,7 +10,7 @@
 #include "REL/m407dll.h"
 
 typedef struct unkDominationData5 {
-/* 0x00 */ u32 unk_00;
+/* 0x00 */ u32 game_state;
 /* 0x04 */ s16 unk_04;
 /* 0x06 */ s16 unk_06;
 /* 0x08 */ s16 unk_08;
@@ -27,9 +27,9 @@ typedef struct unkDominationData5 {
 } unkDominationData5; //sizeof 0x48
 
 //function signatures
-void fn_1_4B7C(void);
-void fn_1_4C3C(s32);
-void fn_1_4C6C(omObjData*);
+void EndGameThink(void);
+void SetGameState(s32);
+void UpdateGameState(omObjData*);
 void fn_1_4D0C(void);
 void fn_1_4D54(void);
 void fn_1_4E8C(void);
@@ -52,7 +52,7 @@ omObjData* lbl_1_bss_397C;
 s16 lbl_1_bss_3978;
 
 //data
-VoidFuncs lbl_1_data_2A8[] = {
+VoidFuncs game_state_funcs[] = {
     fn_1_4D0C,
     fn_1_4D54,
     fn_1_4E8C,
@@ -65,7 +65,7 @@ VoidFuncs lbl_1_data_2A8[] = {
     fn_1_5630,
     fn_1_5A80,
     fn_1_5BB0,
-    fn_1_4B7C,
+    EndGameThink,
 };
 
 f32 lbl_1_data_2DC[4] = {850.0f, 900.0f, 1300.0f, 1500.0f};
@@ -87,7 +87,7 @@ void fn_1_4980(Process* arg0) {
     unkDominationData5* temp_r31;
 
     lbl_1_bss_3980 = arg0;
-    lbl_1_bss_397C = omAddObjEx(lbl_1_bss_3980, 0x40, 0, 0, 0, fn_1_4C6C);
+    lbl_1_bss_397C = omAddObjEx(lbl_1_bss_3980, 0x40, 0, 0, 0, UpdateGameState);
     lbl_1_bss_397C->data = HuMemDirectMallocNum(HEAP_SYSTEM, sizeof(unkDominationData5), MEMORY_DEFAULT_NUM);
     temp_r31 = lbl_1_bss_397C->data;
     Hu3DShadowCreate(45.0f, 10.0f, 10000.0f);
@@ -115,10 +115,10 @@ void fn_1_4980(Process* arg0) {
     }
     
     fn_1_5F40(0);
-    fn_1_4C3C(0);
+    SetGameState(0);
 }
 
-void fn_1_4B7C(void) {
+void EndGameThink(void) {
     unkDominationData5* temp_r31;
 
     temp_r31 = lbl_1_bss_397C->data;
@@ -147,22 +147,22 @@ void fn_1_4B7C(void) {
     }
 }
 
-void fn_1_4C3C(s32 arg0) {
+void SetGameState(s32 state) {
     unkDominationData5* temp_r31;
 
     temp_r31 = lbl_1_bss_397C->data;
-    temp_r31->unk_00 = arg0;
+    temp_r31->game_state = state;
     temp_r31->unk_04 = 0;
 }
 
-void fn_1_4C6C(omObjData* obj) {
+void UpdateGameState(omObjData* obj) {
     unkDominationData5* temp_r30;
     
     temp_r30 = lbl_1_bss_397C->data;
-    lbl_1_data_2A8[temp_r30->unk_00]();
+    game_state_funcs[temp_r30->game_state]();
 
     if (omSysExitReq != 0) {
-        fn_1_4C3C(12);
+        SetGameState(12);
         omSysExitReq = 0;
     }
 }
@@ -171,7 +171,7 @@ void fn_1_4D0C(void) {
     unkDominationData5* sp8;
 
     sp8 = lbl_1_bss_397C->data;
-    fn_1_4C3C(1);
+    SetGameState(1);
 }
 
 void fn_1_4D54(void) {
@@ -194,7 +194,7 @@ void fn_1_4D54(void) {
             temp_r31->unk_04 = 3;
         case 3:
             if (fn_1_1D88() == 0) {
-                fn_1_4C3C(2);
+                SetGameState(2);
                 return;
             }
         }
@@ -220,14 +220,14 @@ void fn_1_4E8C(void) {
         temp_r31->game_timer = GAME_TIMER;
         temp_r31->unk_08 = MGSeqTimerCreate(temp_r31->game_timer / 60);
         fn_1_1E4();
-        fn_1_4C3C(3);
+        SetGameState(3);
     }
 }
 
 void fn_1_4FAC(void) {
     unkDominationData5* temp_r31;
 
-    HuPadReportPresses();
+    // HuPadReportPresses();
 
     temp_r31 = lbl_1_bss_397C->data;
     if (temp_r31->game_timer > 0) {
@@ -244,11 +244,11 @@ void fn_1_4FAC(void) {
     fn_1_5804();
     
     if (temp_r31->unk_24 > 0) {
-        fn_1_4C3C(4);
+        SetGameState(4);
         return;
     }
 
-    fn_1_4C3C(6);
+    SetGameState(6);
 }
 
 void fn_1_50E8(void) {
@@ -271,7 +271,7 @@ void fn_1_50E8(void) {
     case 0xBE:
         temp_r31->unk_44 = HuAudSeqPlay(0x3A);
         fn_1_25C0();
-        fn_1_4C3C(5);
+        SetGameState(5);
         return;
     }
 }
@@ -288,7 +288,7 @@ void fn_1_51E4(void) {
             fn_1_1CAC(sp8.z, sp8.y, sp8.x);
             return;
         }
-        fn_1_4C3C(6);
+        SetGameState(6);
     }
 }
 
@@ -311,10 +311,10 @@ void fn_1_52AC(void) {
         }
         
         if (temp_r31->unk_24 > 0) {
-            fn_1_4C3C(7);
+            SetGameState(7);
             return;
         }
-        fn_1_4C3C(10);
+        SetGameState(10);
     }
 }
 
@@ -344,11 +344,11 @@ void fn_1_53B8(void) {
     if (temp_r31->unk_04 == 70) {
        for (i = 0; i < temp_r31->unk_24; i++) {
             if (!(fn_1_508(temp_r31->unk_1C[i])) && (lbl_1_bss_3978 < fn_1_28D4())) {
-                fn_1_4C3C(8);
+                SetGameState(8);
                 return;
             }
         }
-        fn_1_4C3C(9);
+        SetGameState(9);
     } else {
         temp_r31->unk_04++;
     }
@@ -366,7 +366,7 @@ void fn_1_5574(void) {
         return;
     }
     if (MGSeqStatGet(temp_r31->unk_06) == 0) {
-        fn_1_4C3C(9);
+        SetGameState(9);
     }
 }
 
@@ -399,7 +399,7 @@ void fn_1_5630(void) {
     if (temp_r31->unk_04++ >= 210) {
         MGSeqKill(temp_r31->unk_06);
         temp_r31->unk_06 = -1;
-        fn_1_4C3C(12);
+        SetGameState(12);
     }
 }
 
@@ -484,7 +484,7 @@ void fn_1_5A80(void) {
         return;
     case 120:
         fn_1_404();
-        fn_1_4C3C(9);
+        SetGameState(9);
         return;
         /* fallthrough */
     case 0x3C:
@@ -504,6 +504,6 @@ void fn_1_5BB0(void) {
     if (MGSeqStatGet(temp_r31->unk_06) == 0) {
         MGSeqKill(temp_r31->unk_06);
         temp_r31->unk_06 = -1;
-        fn_1_4C3C(12);
+        SetGameState(12);
     }
 }
