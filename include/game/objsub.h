@@ -29,6 +29,7 @@ extern u8 lbl_801D3E94;
 extern u32 mgRecordExtra;
 extern s32 mgQuitExtraF;
 extern s32 mgPracticeEnableF;
+extern s32 mgPracticeRestartF;
 extern s32 mgInstExitEnableF;
 extern u8 mgBoardHostEnableF;
 

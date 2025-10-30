@@ -3620,6 +3620,7 @@ void MGSeqPracticeExitCheck(omObjData *object)
     s16 input;
     s16 i;
     mgQuitExtraF = 0;
+    mgPracticeRestartF = 0;
     if (object->work[0] == 0) {
         if (omMgIndexGet(omcurovl) == -1) {
             omDelObjEx(HuPrcCurrentGet(), object);
@@ -3639,6 +3640,14 @@ void MGSeqPracticeExitCheck(omObjData *object)
         omSysPauseCtrl(0);
         omSysExitReq = 1;
         mgQuitExtraF = 1;
+        omDelObjEx(HuPrcCurrentGet(), object);
+    }
+    if (input & PAD_BUTTON_X) {
+        HuAudFXPlay(3);
+        pauseExitF = 1;
+        omSysPauseCtrl(0);
+        omSysExitReq = 1;
+        mgPracticeRestartF = 1;
         omDelObjEx(HuPrcCurrentGet(), object);
     }
 }

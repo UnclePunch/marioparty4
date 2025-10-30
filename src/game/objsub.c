@@ -1169,6 +1169,7 @@ u8 lbl_801D3E94;
 u32 mgRecordExtra;
 s32 mgQuitExtraF;
 s32 mgPracticeEnableF;
+s32 mgPracticeRestartF;
 s32 mgInstExitEnableF;
 u8 mgBoardHostEnableF;
 

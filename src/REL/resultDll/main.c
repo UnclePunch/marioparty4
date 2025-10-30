@@ -110,7 +110,14 @@ void ObjectSetup(void)
             while (HuARDMACheck())
                 ;
         }
-        omOvlReturnEx(1, 1);
+
+        if (mgPracticeRestartF == 1) {
+            mgPracticeRestartF = 0;
+            omOvlCallEx(mgInfoTbl[resultMgNo].ovl, 1, 0, 0);
+        }
+        else{
+            omOvlReturnEx(1, 1);
+        }
         return;
     }
     CRot.x = 0.0f;
